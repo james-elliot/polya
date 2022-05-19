@@ -1,4 +1,5 @@
-const SIZE:usize = 1000000000;
+//const SIZE:usize = 1000000000;
+const SIZE:usize = 100;
 
 fn build_primes () -> Vec<u32> {
     let mut p = Vec::new();
@@ -21,7 +22,7 @@ fn build_primes () -> Vec<u32> {
     return p;
 }
 
-fn main() {
+fn do_it() {
     let mut tab = Box::new([0 as u8; SIZE]);
     tab[1]=0;tab[2]=1;
     let mut num = 1-1;
@@ -51,4 +52,35 @@ fn main() {
     }
     println!("first={},imax={},maxi={},imin={},mini={},last={})",
 	     first,imax,maxi,imin,mini,last);
+}
+
+fn do_it2() {
+    let mut tab = Box::new([0 as u8; SIZE]);
+    tab[1]=1;tab[2]=0;
+    let primes = build_primes();
+    
+    for p in primes.iter() {
+	print!("p={}:",p);
+	let mut v = 0;
+	loop  {
+	    for _i in 0..p-1 {
+		v=v+(*p as usize);
+		if v>= SIZE {break}
+		tab[v] = tab[v]^1;
+		print!("{} ",v);
+	    }
+	    v=v+(*p as usize);
+	    if v>=SIZE {break}
+	}
+	tab[*p as usize]=0;
+	println!("");
+    }
+    println!("{:?}",tab);
+
+//    println!("first={},imax={},maxi={},imin={},mini={},last={})",
+//	     first,imax,maxi,imin,mini,last);
+}
+
+fn main() {
+    do_it2();
 }
