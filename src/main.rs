@@ -1,13 +1,13 @@
 const SIZE:usize = 1000000000;
 
-fn build_primes () -> Vec<u32> {
+fn build_primes () -> Vec<u64> {
     let mut p = Vec::new();
     p.push(2);
     let mut i = 3;
-    let sto = (SIZE as f64+0.01).sqrt() as  u32;
+    let sto = (SIZE as f64+0.01).sqrt() as  u64;
     loop {
 	let mut j = 0;
-	let st = (i as f64+0.01).sqrt() as u32;
+	let st = (i as f64+0.01).sqrt() as u64;
 	loop  {
 	    if i % p[j] == 0 || p[j] > st {break}
 	    j=j+1;
@@ -21,6 +21,15 @@ fn build_primes () -> Vec<u32> {
     return p;
 }
 
+/*
+For the algorithm see:
+MATHEMATICS OF COMPUTATION
+Volume 77, Number 263, July 2008, Pages 1681-1694
+S 0025-5718(08)02036-X
+Article electronically published on January 25, 2008
+SIGN CHANGES IN SUMS OF THE LIOUVILLE FUNCTION
+PETER BORWEIN, RON FERGUSON, AND MICHAEL J. MOSSINGHOFF
+*/
 fn liouville()-> Box<[u8;SIZE]> {
     let mut tab = Box::new([0 as u8; SIZE]);
     tab[1]=1;tab[2]=0;
@@ -53,9 +62,9 @@ fn liouville()-> Box<[u8;SIZE]> {
 fn main() {
     let tab = liouville();
     let (mut first,mut last)=(0,0);
-    let (mut imax,mut maxi)=(0,i32::MIN);
-    let (mut imin,mut mini)=(0,i32::MAX);
-    let mut num = 0 as i32;
+    let (mut imax,mut maxi)=(0,i64::MIN);
+    let (mut imin,mut mini)=(0,i64::MAX);
+    let mut num = 0 as i64;
     for i in 3..SIZE {
 	if tab[i]==0 {num=num-1}
 	else {num=num+1}

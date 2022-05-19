@@ -8,4 +8,12 @@ for n=906316571 and L(906316571)=829.
 
 The minimum (in this range) is reached for n=712638284 and L(712638284)=-29736
 
-The program takes around 5 minutes on an i9-9900K without parallelism. It is very simple, and could easily be improved.
+The program takes around 10s on an i9-9900K.
+
+> For the algorithm see:  
+> MATHEMATICS OF COMPUTATION  
+> Volume 77, Number 263, July 2008, Pages 1681-1694  
+> S 0025-5718(08)02036-X  
+> SIGN CHANGES IN SUMS OF THE LIOUVILLE FUNCTION  
+> PETER BORWEIN, RON FERGUSON, AND MICHAEL J. MOSSINGHOFF  
+
