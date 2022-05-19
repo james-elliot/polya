@@ -10,7 +10,8 @@ The minimum (in this range) is reached for n=712638284 and L(712638284)=-29736
 
 The program takes around 10s on an i9-9900K.
 
-> For the algorithm see:  
+For the algorithm see:  
+
 > MATHEMATICS OF COMPUTATION  
 > Volume 77, Number 263, July 2008, Pages 1681-1694  
 > S 0025-5718(08)02036-X  
