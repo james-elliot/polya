@@ -1,6 +1,4 @@
-#define NB_PROCESS 16
-#define NB_SLICES 32
-
+#define NB_PROCESS 4
 
 #define _GNU_SOURCE
 
@@ -16,76 +14,64 @@
 #include <errno.h>
 #include <sys/mman.h>
 
-//#define SIZE 1000000000
-#define SIZE 1000000000
+
+#define MAXV 8000000000L
+#define SIZE ((MAXV/8)+1)
 
 typedef
 struct _Params {
-  int16_t *tab;
-  int *p;
-  int num;
-  int start;
-  int end;
+  uint8_t *tab;
+  int64_t *p;
+  int64_t start;
+  int64_t end;
 } Params;
 
-void build_primes (int *p,int sto) {
+void build_primes (int64_t *p,int sto,int nb_primes) {
   p[0]=2;
   int k=1;
   int i = 3;
   while(true) {
-	int j = 0;
-	int st = sqrt(i+0.01);
-	while(true)  {
-	  if (((i % p[j]) == 0) || (p[j] > st)) {break;}
-	    j=j+1;
-	}
-	if (p[j] > st) {
-	  p[k++]=i;
-	  if (i > sto) {break;}
-	}
-	i=i+2;
+    if (k>=nb_primes) {perror("nb_primes");exit(-1);}
+    int j = 0;
+    int st = sqrt((double)i+0.01);
+    while(true)  {
+      if (((i % p[j]) == 0) || (p[j] > st)) {break;}
+      j=j+1;
     }
+    if (p[j] > st) {
+      p[k++]=i;
+      if (i > sto) {break;}
+    }
+    i=i+2;
+  }
 }
 
 int do_the_job(Params *pr) {
-  int16_t *tab=pr->tab;
-  int *p=pr->p;
-  int start = pr->start;
-  int end = pr->end;
-  bool go_on;
-  if (start<3) start=3;
-  do {
-    go_on=false;
-    for (int i=start;i<end;i++) {
-      if (tab[i]==0) {
-	int j = 0;
-	int st = sqrt(i+0.01);
-	while(p[j]<=st)  {
-	  if ((i % p[j]) == 0) break;
-	  j=j+1;
-	}
-	if (p[j] > st)  tab[i]=1;
-	else  {
-	  int k = i/p[j];
-	  if (tab[k]>0) tab[i]=1+tab[k];
-	  else {
-	    tab[i]=-p[j];
-	    go_on = true;
-	  }
-	}
-      }
-      else if (tab[i]<0) {
-	int k = i/(-tab[i]);
-	if (tab[k]>0) tab[i]=1+tab[k];
-	else go_on = true;
-      }
+  uint8_t *tab=pr->tab;
+  int64_t *primes =pr->p;
+  int64_t a = pr->start;
+  int64_t b = pr->end;
+
+  int64_t bsup = sqrt(b+0.01);
+  for (int i=0;;i++) {
+    int p = primes[i];
+    if (p>bsup) {break;}
+    int64_t k = a/p;
+    int64_t mp = k*p;
+    if (mp<a) {mp=mp+p;k=k+1;}
+    while(mp<=b) {
+      int64_t i1=mp/8,i2=mp%8;
+      int64_t j1=k/8,j2=k%8;
+      if ((tab[j1]&(1<<j2))==0) {tab[i1]=tab[i1]|(1<<i2);}
+      mp=mp+p;
+      k=k+1;
     }
-  } while(go_on);
+  }
   return 0;
 }
 
-#define STACK_SIZE 65536
-#define SLICE (SIZE/NB_SLICES)
+
+#define STACK_SIZE (1024*1024)
 int main() {
   char *stack[NB_PROCESS];
   char *stackTop[NB_PROCESS];
@@ -93,72 +79,69 @@ int main() {
   int pids[NB_PROCESS]={};
   
   for (int i=0;i<NB_PROCESS;i++) {
-    //    stack[i]=malloc(STACK_SIZE);
     stack[i] = mmap(NULL, STACK_SIZE, PROT_READ | PROT_WRITE,
 		    MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK, -1, 0);
     if (stack [i] == MAP_FAILED)  {perror("mmap");exit(-1);}
     stackTop[i]=stack[i]+STACK_SIZE;
   }
   
-  int16_t *tab=(int16_t *)calloc(SIZE,sizeof(int16_t));
-  int sto = sqrt(SIZE+0.01);
-  int *p=(int *)malloc(sizeof(int)*sto);
-  
-  tab[1]=0;tab[2]=1;
-  int sum = 1-1;
-  int first=0,last=0;
-  int imax=0,maxi=-10000000;
-  int imin=0, mini=10000000;
-  int start=0;
-  build_primes(p,sto);
-  
-  //  do_the_job();
-  int nb_available=NB_PROCESS;
-  int rem_slices=NB_SLICES;
-  while (rem_slices>0) {
-    int num;
-    if (nb_available>0) {
-      for (num=0;num<NB_PROCESS;num++)
-	if (pids[num]==0) break;
-      if (num==NB_PROCESS) {perror("pids");exit(-1);}
-      pr[num].tab=tab;pr[num].p=p;pr[num].num=num;
-      pr[num].start=start;pr[num].end=start+SLICE;
-      if (rem_slices==1) pr[num].end=SIZE;
-      pids[num]=clone((int(*)(void *))do_the_job,stackTop[num],CLONE_VM|SIGCHLD,&pr[num]);
-      printf("%d\n",pids[num]);
-      if (pids[num]==-1) {perror("clone");exit(-1);}
-      start+=SLICE;
-      nb_available--;
-      rem_slices--;
+  int sto = sqrt((double)MAXV+0.01);
+  int nb_primes = 1.25*((double)sto)/log(sto);
+  int64_t *primes=(int64_t *)malloc(sizeof(int64_t)*nb_primes);
+  build_primes(primes,sto,nb_primes);
+  uint8_t *tab = (uint8_t *)malloc(SIZE*sizeof(uint8_t));
+  tab[0]=0x2;
+
+  int64_t a = 3;
+  int64_t b;
+  while (a<MAXV) {
+    b=2*a-1;
+    if (b>=MAXV) {b=MAXV-1;}
+    if ((b-a)<65536) {
+      pr[0].tab=tab;pr[0].p=primes;
+      pr[0].start=a;pr[0].end=b;
+      do_the_job(&pr[0]);
     }
-    else {
-      int status;
-      int pid=waitpid(-1,&status,0);
-      if (pid==-1) {
-	if (errno==ECHILD) break;
-	perror("waitpid");
-	exit(-1);
+    else { 
+      for(int num=0;num<NB_PROCESS;num++) {
+	pr[num].tab=tab;pr[num].p=primes;
+	if (num==0) pr[num].start=a;
+	else pr[num].start=a+((b-a)*num)/NB_PROCESS+1;
+	pr[num].end=a+((b-a)*(num+1))/NB_PROCESS;
+	pids[num]=clone((int(*)(void *))do_the_job,
+			stackTop[num],
+			CLONE_VM|SIGCHLD,
+			&pr[num]);
       }
-      int num;
-      for (num=0;num<NB_PROCESS;num++) if (pid==pids[num]) break;
-      if (num==NB_PROCESS) {
-	perror("Zorglub");
-	exit(-1);
+      int finished=0;
+      while (finished!=NB_PROCESS) {
+	int status;
+	int pid=waitpid(-1,&status,0);
+	if (pid==-1) {
+	  perror("waitpid");
+	  exit(-1);
+	}
+	finished++;
       }
-      pids[num]=0;
-      nb_available++;
     }
+    a=b+1;
   }
+
   
-  for (int i=3;i<SIZE;i++) {
-    while (tab[i]<=0) usleep(10);
-    if ((tab[i]%2)==0) sum=sum+1;
-    else sum=sum-1;
-    if (sum > 0) {last=i;}
-    if ((sum > 0) && (first == 0)) {first=i;}
-    if (sum > maxi) {maxi=sum;imax=i;}
-    if (sum < mini) {mini=sum;imin=i;}
+  int64_t first=0, last=0;
+  int64_t imax=0, maxi=-10000000;
+  int64_t imin=0, mini=10000000;
+  int64_t num = 0 ;
+  for (int64_t i=3;i<MAXV;i++) {
+    int64_t i1=i/8,i2=i%8;
+    if ((tab[i1]&(1<<i2))==0) {num=num-1;}
+    else {num=num+1;}
+    if (num > 0) {last=i;}
+    if ((num > 0) && (first == 0)) {first=i;}
+    if (num > maxi) {maxi=num;imax=i;}
+    if (num < mini) {mini=num;imin=i;}
   }
-  printf("first=%d,imax=%d,maxi=%d,imin=%d,mini=%d,last=%d\n",
-	 first,imax,maxi,imin,mini,last);
+  printf(
+	 "first=%ld,imax=%ld,maxi=%ld,last=%ld,imin=%ld,mini=%ld\n",
+	 first,imax,maxi,last,imin,mini);
 }
