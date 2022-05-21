@@ -1,7 +1,8 @@
-#define NB_PROCESS 4
+//#define MAXV 100000000000L
+#define MAXV 1000000000L
+#define NB_PROCESS 16
 
 #define _GNU_SOURCE
-
 #include <math.h>
 #include <malloc.h>
 #include <stdbool.h>
@@ -15,7 +16,6 @@
 #include <sys/mman.h>
 
 
-#define MAXV 8000000000L
 #define SIZE ((MAXV/8)+1)
 
 typedef
@@ -89,13 +89,14 @@ int main() {
   int nb_primes = 1.25*((double)sto)/log(sto);
   int64_t *primes=(int64_t *)malloc(sizeof(int64_t)*nb_primes);
   build_primes(primes,sto,nb_primes);
-  uint8_t *tab = (uint8_t *)malloc(SIZE*sizeof(uint8_t));
+  uint8_t *tab = (uint8_t *)calloc(SIZE,sizeof(uint8_t));
   tab[0]=0x2;
 
   int64_t a = 3;
   int64_t b;
   while (a<MAXV) {
     b=2*a-1;
+    printf("%ld %ld\n",a,b);
     if (b>=MAXV) {b=MAXV-1;}
     if ((b-a)<65536) {
       pr[0].tab=tab;pr[0].p=primes;
@@ -132,7 +133,7 @@ int main() {
   int64_t imax=0, maxi=-10000000;
   int64_t imin=0, mini=10000000;
   int64_t num = 0 ;
-  for (int64_t i=3;i<MAXV;i++) {
+  for (int64_t i=3;i<8;i++) {
     int64_t i1=i/8,i2=i%8;
     if ((tab[i1]&(1<<i2))==0) {num=num-1;}
     else {num=num+1;}
@@ -141,6 +142,26 @@ int main() {
     if (num > maxi) {maxi=num;imax=i;}
     if (num < mini) {mini=num;imin=i;}
   }
+
+  int64_t i1=1;
+  uint8_t i2=0;
+  while (true) {
+    if ((tab[i1]&(1<<i2))==0) num--; else num++;
+    if (num > 0) {
+      last=8*i1+i2;
+      if (first==0) {first=last;}
+      if (num > maxi) {maxi=num;imax=last;}
+    }
+    if (num < mini) {mini=num;imin=8*i1+i2;}
+    i2++;
+    if (i2==8) {
+      i2=0;
+      i1++;
+      if (i1==MAXV/8) break;
+    }
+  }
+
+  
   printf(
 	 "first=%ld,imax=%ld,maxi=%ld,last=%ld,imin=%ld,mini=%ld\n",
 	 first,imax,maxi,last,imin,mini);
