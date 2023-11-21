@@ -52,7 +52,7 @@ fn liouville()-> Box<[u8;SIZE]> {
 		if mp>b {break}
 		let (i1,i2)=(mp/8,mp%8);
 		let (j1,j2)=(k/8,k%8);
-		if tab[j1]&(1<<j2)==0 {tab[i1] |= (1<<i2)}
+		if tab[j1]&(1<<j2)==0 {tab[i1] |= 1<<i2}
 		mp += p;
 		k += 1;
 	    }
