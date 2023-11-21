@@ -11,15 +11,15 @@ fn build_primes () -> Vec<u64> {
 	let st = (i as f64+0.01).sqrt() as u64;
 	loop  {
 	    if i % p[j] == 0 || p[j] > st {break}
-	    j=j+1;
+	    j += 1;
 	}
 	if p[j] > st {
 	    p.push(i);
 	    if i > sto {break}
 	}
-	i=i+2;
+	i += 2;
     }
-    return p;
+    p
 }
 
 /*
@@ -32,7 +32,7 @@ SIGN CHANGES IN SUMS OF THE LIOUVILLE FUNCTION
 PETER BORWEIN, RON FERGUSON, AND MICHAEL J. MOSSINGHOFF
 */
 fn liouville()-> Box<[u8;SIZE]> {
-    let mut tab = Box::new([0 as u8; SIZE]);
+    let mut tab = Box::new([0_u8; SIZE]);
     tab[0]=0x2;
     let primes = build_primes();
 
@@ -47,30 +47,30 @@ fn liouville()-> Box<[u8;SIZE]> {
 	    if p>bsup {break}
 	    let mut k = a/p;
 	    let mut mp = k*p;
-	    if mp<a {mp=mp+p;k=k+1}
+	    if mp<a {mp += p;k += 1}
 	    loop {
 		if mp>b {break}
 		let (i1,i2)=(mp/8,mp%8);
 		let (j1,j2)=(k/8,k%8);
-		if tab[j1]&(1<<j2)==0 {tab[i1]=tab[i1]|(1<<i2)}
-		mp=mp+p;
-		k=k+1;
+		if tab[j1]&(1<<j2)==0 {tab[i1] |= (1<<i2)}
+		mp += p;
+		k += 1;
 	    }
 	}
 	a=b+1
     }
-    return tab;
+    tab
 }
 
 fn summatory(tab: Box<[u8;SIZE]>) {
     let (mut first,mut last)=(0,0);
     let (mut imax,mut maxi)=(0,i64::MIN);
     let (mut imin,mut mini)=(0,i64::MAX);
-    let mut num = 0 as i64;
+    let mut num = 0_i64;
     for i in 3..MAXV {
 	let (i1,i2)=(i/8,i%8);
-	if tab[i1]&(1<<i2)==0 {num=num-1}
-	else {num=num+1}
+	if tab[i1]&(1<<i2)==0 {num -= 1}
+	else {num += 1}
 	if num > 0 {last=i}
 	if num > 0 && first == 0 {first=i}
 	if num > maxi {maxi=num;imax=i}
