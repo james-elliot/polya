@@ -101,7 +101,7 @@ int main() {
   int64_t b;
   while (a < MAXV) {
     b = 2 * a - 1;
-    printf("%ld %ld\n", a, b);
+    printf("%lld %lld\n", (long long int)a, (long long int)b);
     if (b >= MAXV) {
       b = MAXV - 1;
     }
@@ -193,11 +193,8 @@ int main() {
         break;
     }
   }
-#if (ULONG_MAX == UINT64_MAX)
-  printf("first=%ld,imax=%ld,maxi=%ld,last=%ld,imin=%ld,mini=%ld\n", first,
-         imax, maxi, last, imin, mini);
-#elif (ULLONG_MAX == UINT64_MAX)
-  printf("first=%lld,imax=%lld,maxi=%lld,last=%lld,imin=%lld,mini=%lld\n", first,
-         imax, maxi, last, imin, mini);
-#endif
+
+  printf("first=%lld,imax=%lld,maxi=%lld,last=%lld,imin=%lld,mini=%lld\n",
+	 (long long int)first,(long long int)imax, (long long int)maxi,
+	 (long long int)last, (long long int)imin, (long long int)mini);
 }
