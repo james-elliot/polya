@@ -1,13 +1,14 @@
-//#define MAXV 100000000000L
-#define MAXV 1000000000L
+#define MAXV 1000000000LL
 #define NB_PROCESS 16
 
+#include <limits.h>
 #include <math.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 
 #define SIZE ((MAXV / 8) + 1)
 
@@ -192,6 +193,11 @@ int main() {
         break;
     }
   }
+#if (ULONG_MAX == UINT64_MAX)
   printf("first=%ld,imax=%ld,maxi=%ld,last=%ld,imin=%ld,mini=%ld\n", first,
          imax, maxi, last, imin, mini);
+#elif (ULLONG_MAX == UINT64_MAX)
+  printf("first=%lld,imax=%lld,maxi=%lld,last=%lld,imin=%lld,mini=%lld\n", first,
+         imax, maxi, last, imin, mini);
+#endif
 }
