@@ -12,7 +12,7 @@ The Rust program takes around 10s on an i9-9900K. It runs only in release mode
 > cargo run --release
 
 The C version in *other/* is parallel and uses shared memory. It should work on any OS with the Posix thread model.
-On an i9-9900K it computes up to n=1,000,000,000 in 2s and up to n=100,000,000,000 in 6 minutes.
+On an i9-9900K it computes up to n=1,000,000,000 in 2s and up to n=100,000,000,000 in 6 minutes (13min17s on a i7-10510U CPU @ 1.80GHz).
 
 For the algorithm see:  
 
