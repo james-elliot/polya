@@ -1,13 +1,12 @@
-#define MAXV 1000000000LL
-#define NB_PROCESS 16
+#define MAXV 10000000000LL
+#define NB_PROCESS 8
 
-#include <limits.h>
-#include <math.h>
-#include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <pthread.h>
 
 
 #define SIZE ((MAXV / 8) + 1)
@@ -19,31 +18,20 @@ typedef struct _Params {
   int64_t end;
 } Params;
 
-void build_primes(int64_t *p, int sto, int nb_primes) {
+void build_primes(int64_t *p, int sto) {
   p[0] = 2;
   int k = 1;
   int i = 3;
-  while (true) {
-    if (k >= nb_primes) {
-      perror("nb_primes");
-      exit(-1);
-    }
+  do {
     int j = 0;
     int st = sqrt((double)i + 0.01);
-    while (true) {
-      if (((i % p[j]) == 0) || (p[j] > st)) {
-        break;
-      }
-      j++;
-    }
+    while (((i % p[j]) != 0) && (p[j] <= st)) j++;
     if (p[j] > st) {
       p[k++] = i;
-      if (i > sto) {
-        break;
-      }
+      if (i > sto) break;
     }
     i += 2;
-  }
+  } while (true);
 }
 
 static void *do_the_job(void *arg) {
@@ -52,15 +40,11 @@ static void *do_the_job(void *arg) {
   int64_t *primes = pr->p;
   int64_t a = pr->start;
   int64_t b = pr->end;
-
   int64_t bsup = sqrt(b + 0.01);
-  for (int i = 0;; i++) {
-    int p = primes[i];
-    if (p > bsup) {
-      break;
-    }
-    int64_t k = a / p;
-    int64_t mp = k * p;
+
+  for (int i = 0;primes[i]<=bsup; i++) {
+    int64_t p = primes[i];
+    int64_t k = a / p, mp = k * p;
     if (mp < a) {
       mp = mp + p;
       k++;
@@ -68,9 +52,7 @@ static void *do_the_job(void *arg) {
     while (mp <= b) {
       int64_t i1 = mp / 8, i2 = mp % 8;
       int64_t j1 = k / 8, j2 = k % 8;
-      if ((tab[j1] & (1 << j2)) == 0) {
-        tab[i1] = tab[i1] | (1 << i2);
-      }
+      if ((tab[j1] & (1 << j2)) == 0) tab[i1] |= (1 << i2);
       mp = mp + p;
       k++;
     }
@@ -89,7 +71,7 @@ int main() {
     printf("Error in primes malloc\n");
     exit(-1);
   }
-  build_primes(primes, sto, nb_primes);
+  build_primes(primes, sto);
   uint8_t *tab = (uint8_t *)calloc(SIZE, sizeof(uint8_t));
   if (tab == NULL) {
     printf("Error in tab malloc\n");
@@ -102,9 +84,7 @@ int main() {
   while (a < MAXV) {
     b = 2 * a - 1;
     printf("%lld %lld\n", (long long int)a, (long long int)b);
-    if (b >= MAXV) {
-      b = MAXV - 1;
-    }
+    if (b >= MAXV) b = MAXV - 1;
     if ((b - a) < 65536) {
       pr[0].tab = tab;
       pr[0].p = primes;
@@ -143,17 +123,10 @@ int main() {
   int64_t num = 0;
   for (int64_t i = 3; i < 8; i++) {
     int64_t i1 = i / 8, i2 = i % 8;
-    if ((tab[i1] & (1 << i2)) == 0) {
-      num = num - 1;
-    } else {
-      num = num + 1;
-    }
-    if (num > 0) {
-      last = i;
-    }
-    if ((num > 0) && (first == 0)) {
-      first = i;
-    }
+    if ((tab[i1] & (1 << i2)) == 0) num = num - 1;
+    else num = num + 1;
+    if (num > 0) last = i;
+    if ((num > 0) && (first == 0)) first = i;
     if (num > maxi) {
       maxi = num;
       imax = i;
@@ -167,15 +140,11 @@ int main() {
   int64_t i1 = 1;
   uint8_t i2 = 0;
   while (true) {
-    if ((tab[i1] & (1 << i2)) == 0)
-      num--;
-    else
-      num++;
+    if ((tab[i1] & (1 << i2)) == 0) num--;
+    else num++;
     if (num > 0) {
       last = 8 * i1 + i2;
-      if (first == 0) {
-        first = last;
-      }
+      if (first == 0)  first = last;
       if (num > maxi) {
         maxi = num;
         imax = last;
@@ -189,8 +158,7 @@ int main() {
     if (i2 == 8) {
       i2 = 0;
       i1++;
-      if (i1 == MAXV / 8)
-        break;
+      if (i1 == MAXV / 8) break;
     }
   }
 
