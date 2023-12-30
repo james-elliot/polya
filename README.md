@@ -13,11 +13,11 @@ The Rust program takes around 10s on an i9-9900K. It runs only in release mode
 
 The C version in *other/* is parallel and uses shared memory. It should work on any OS with the Posix thread model.
 
-| Processor / nb threads used |    1 |   2 |   4 |   8 |  16 |  32 |
-|-----------------------------|-----:|----:|----:|----:|----:|----:|
-| i9-9900K CPU @ 3.60GHz      | 1489 | 835 | 588 | 476 | 423 | 421 |
-| i7-1068NG7 @ 2.30GHz        | 1929 | 968 | 653 | 566 | 566 |     |
-| i7-10510U @ 1.80GHz         | 1861 |     |     |     |     |     |
+| Processor / nb threads used |    1 |    2 |   4 |   8 |  16 |  32 |
+|-----------------------------|-----:|-----:|----:|----:|----:|----:|
+| i9-9900K CPU @ 3.60GHz      | 1489 |  835 | 588 | 476 | 423 | 421 |
+| i7-1068NG7 @ 2.30GHz        | 1929 |  968 | 653 | 566 | 566 |     |
+| i7-10510U @ 1.80GHz         | 1861 | 1247 |     |     |     |     |
 
 For the algorithm see:  
 
