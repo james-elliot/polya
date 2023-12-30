@@ -17,7 +17,7 @@ The C version in *other/* is parallel and uses shared memory. It should work on 
 |-----------------------------|-----:|-----:|----:|----:|----:|----:|
 | i9-9900K CPU @ 3.60GHz      | 1489 |  835 | 588 | 476 | 423 | 421 |
 | i7-1068NG7 @ 2.30GHz        | 1929 |  968 | 653 | 566 | 566 |     |
-| i7-10510U @ 1.80GHz         | 1861 | 1247 |     |     |     |     |
+| i7-10510U @ 1.80GHz         | 1861 | 1247 | 977 |     |     |     |
 
 For the algorithm see:  
 
