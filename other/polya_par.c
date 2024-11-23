@@ -1,4 +1,4 @@
-#define MAXV 10000000000LL
+#define MAXV 1000000000LL
 #define NB_PROCESS 8
 
 #include <stdbool.h>

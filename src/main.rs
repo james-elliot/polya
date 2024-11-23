@@ -31,16 +31,15 @@ Article electronically published on January 25, 2008
 SIGN CHANGES IN SUMS OF THE LIOUVILLE FUNCTION
 PETER BORWEIN, RON FERGUSON, AND MICHAEL J. MOSSINGHOFF
 */
-fn liouville()-> Box<[u8;SIZE]> {
-    let mut tab = Box::new([0_u8; SIZE]);
+use unchecked_index::{UncheckedIndex,unchecked_index};
+unsafe fn liouville()-> UncheckedIndex<Box<[u8;SIZE]>> {
+    let mut tab = unchecked_index(Box::new([0_u8; SIZE]));
     tab[0]=0x2;
     let primes = build_primes();
 
     let mut a = 3;
-    let mut b;
     while a<MAXV {
-	b=2*a-1;
-	if b>=MAXV {b=MAXV-1}
+	let b = std::cmp::min(2*a-1,MAXV);
 	let bsup = (b as f64+0.01).sqrt() as usize;
 	for p in primes.iter() {
 	    let p = *p as usize;
@@ -50,8 +49,8 @@ fn liouville()-> Box<[u8;SIZE]> {
 	    if mp<a {mp += p;k += 1}
 	    loop {
 		if mp>b {break}
-		let (i1,i2)=(mp/8,mp%8);
-		let (j1,j2)=(k/8,k%8);
+		let (i1,i2)=(mp/8,(mp%8) as u8);
+		let (j1,j2)=(k/8,(k%8) as u8);
 		if tab[j1]&(1<<j2)==0 {tab[i1] |= 1<<i2}
 		mp += p;
 		k += 1;
@@ -62,7 +61,7 @@ fn liouville()-> Box<[u8;SIZE]> {
     tab
 }
 
-fn summatory(tab: Box<[u8;SIZE]>) {
+unsafe fn summatory(tab: UncheckedIndex<Box<[u8;SIZE]>>) {
     let (mut first,mut last)=(0,0);
     let (mut imax,mut maxi)=(0,i64::MIN);
     let (mut imin,mut mini)=(0,i64::MAX);
@@ -82,6 +81,8 @@ fn summatory(tab: Box<[u8;SIZE]>) {
 }
 
 fn main() {
-    let tab = liouville();
-    summatory(tab);
+    unsafe {
+        let tab = liouville();
+        summatory(tab);
+    }
 }
